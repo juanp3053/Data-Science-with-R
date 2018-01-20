@@ -1,0 +1,28 @@
+---
+title: "UNG Points of Interest"
+author: "Juan P. Garces"
+date: "December 16, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+library(leaflet)
+```
+
+## UNG Points of Interest for every student!
+
+```{r echo=FALSE}
+Map <- leaflet() %>% addTiles() %>% addMarkers(lat = 34.529330, lng= -83.987524, popup = "Rogers Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.529714 , lng= -83.987506 , popup = "HansFord Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>%
+  addMarkers(lat = 34.530000 , lng= -83.987013 , popup = "Price Memorial Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.529441, lng= -83.986712 , popup = " Nix Fine Arts Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.529531 , lng= -83.985875, popup = "Barnes Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% 
+  addMarkers(lat = 34.530146 , lng= -83.986332 , popup = "Young Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.530181 , lng= -83.985748 , popup = "Hoag Student Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.530007 , lng= -83.984761, popup = "Stewart Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% 
+  addMarkers(lat = 34.529486 , lng= -83.984881 , popup = "Dunlap Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.529521 , lng= -83.984207, popup = "Newton Oakes Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% 
+  addMarkers(lat = 34.528821, lng= -83.983713 , popup = "Memorial Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.528890, lng= -83.990483, popup = "Health & Natural Science", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.528900, lng=-83.983533 , popup = "Memorial Hall", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% 
+  addMarkers(lat = 34.528479, lng= -83.982232, popup = "Welcome Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE))%>% addMarkers(lat = 34.527374 , lng= -83.982587, popup = "Library & Technology Center", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% addMarkers(lat = 34.528138, lng= -83.981383, popup = "Military Leadership Center" , markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE)) %>% 
+  addMarkers(lat = 34.530496, lng= -83.985167, popup = "Rec Center & Parking Deck", markerClusterOptions(showCoverageOnHover = TRUE, zoomToBoundsOnClick = TRUE,      spiderfyOnMaxZoom = TRUE))
+
+Map
+```
+
+
+
+

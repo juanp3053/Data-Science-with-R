@@ -1,0 +1,119 @@
+---
+title: "Project V"
+author: "Juan P. Garces"
+date: "November 2, 2016"
+output: html_document
+---
+```{r echo=FALSE, results="hide", warning=FALSE, message=FALSE}
+library("ggplot2")
+library("dplyr")
+data("ToothGrowth")
+```
+
+### Exploratory Analysis
+Below is a datagram showing The Effect of Vitamin C on Tooth Growth in Guinea Pigs
+```{r echo=FALSE}
+str(ToothGrowth)
+```
+The Plots below show a comparison between delivery method and dosage.
+```{r echo=FALSE}
+tGrowth <- ggplot(ToothGrowth, aes(supp,len))+geom_boxplot()+
+  labs(x="Supplement Type", y="Tooth Length")
+tGrowth
+
+dGrowth <- ggplot(ToothGrowth, aes(as.factor(dose),len))+geom_boxplot()+
+  labs(x="Dose in milligrams/day", y="Tooth Length")
+dGrowth
+
+bGrowth <- ggplot(ToothGrowth, aes(as.factor(dose),len))+geom_boxplot(aes(fill=supp))+
+  labs(x="Dose in milligrams/day", y="Tooth Length")
+bGrowth
+```
+
+
+We can appreciate the trend where Orange Juice as a supplement has makes the Guinea Pig's tooth longer, except when a the Dose is 2 milligrams/day. Making ascorbic acid more effective in higher dosage.
+
+##### Means
+I created sample means of the amount of growth expected for the two options:
+* Guinea pigs who receive a supplement as ascorbic acid (any dosage)
+* Guinea pigs who receive 2 mg of the supplement, delivered via orange juice 
+```{r}
+S1<- filter(ToothGrowth, supp == "VC")
+S2<- filter(ToothGrowth, supp == "OJ") # for Later Use
+S3<- filter(ToothGrowth, (dose == 2.0 & supp == "OJ")) 
+t.test(S1$len, conf.level = .95)
+t.test(S3$len, conf.level = .95)
+```
+
+### Inferential Analysis
+I conducted t-tests to compare mean growth between several different pairs.
+
+#### Comparison between abscorbic acid and orange juice supplement
+I test the hypotheses $H_0 : \mu _{VC} = \mu _{OJ}$   versus  $H_a : \mu _{VC} \ne \mu _{OJ}$
+```{r}
+t <- t.test(len~supp,ToothGrowth)
+```
+```{r echo=FALSE} 
+t 
+``` 
+The t-statistic of the test was `r t$statistic` and the p-value was `r t$p.value `
+
+SENTENCE 1
+
+#### Comparison between 1mg from orange juice and 2mg dose from orange juice supplement
+I test the hypotheses $H_0 : \mu _{1mg} = \mu _{2mg}$   versus  $H_a : \mu _{1mg} < \mu _{2mg}$
+```{r}
+S4<- filter(S2, dose == 1.0 | dose == 2.0)
+t <- t.test(len~dose, S4,alternative = "less")
+```
+```{r echo=FALSE} 
+t 
+```
+The t-statistic of the test was `r t$statistic` and the p-value was `r t$p.value 
+
+SENTENCE 2
+
+#### Comparison between 1mg of abscorbic acid and 2mg of Abscorbic acid supplement
+I test the hypotheses $H_0 : \mu _{1mg} = \mu _{2mg}$   versus  $H_a : \mu _{1mg} < \mu _{2mg}$
+```{r}
+S5<- filter(S1, dose == 1.0 | dose == 2.0)
+t <- t.test(len~dose, S5,alternative= "less")
+```
+```{r echo=FALSE} 
+t 
+```
+The t-statistic of the test was `r t$statistic` and the p-value was `r t$p.value `
+
+SENTENCE 3
+
+#### Comparison between 1mg abscorbic acid 1mg and orange juice supplement
+I test the hypotheses $H_0 : \mu _{1mg VC} = \mu _{1mg OJ}$   versus  $H_a : \mu _{1mg VC} \ne \mu _{1mg OJ}$
+```{r}
+Both <- filter(ToothGrowth, dose == 1.0)
+t <- t.test(len~supp, Both)
+```
+```{r echo=FALSE} 
+t 
+```
+The t-statistic of the test was `r t$statistic` and the p-value was `r t$p.value` 
+
+SENTENCE 4
+
+
+#### Comparison between 2mg abscorbic acid and 2mg orange juice supplement
+I test the hypotheses $H_0 : \mu _{2mg VC} = \mu _{2mg OJ}$   versus  $H_a : \mu _{2mg VC} \ne \mu _{2mg OJ}$
+```{r}
+Both <- filter(ToothGrowth, dose == 2.0)
+t <- t.test(len~supp, Both)
+```
+```{r echo=FALSE} 
+t 
+```
+The t-statistic of the test was `r t$statistic` and the p-value was `r t$p.value `
+
+SENTENCE 5
+
+
+
+
+

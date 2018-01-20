@@ -1,0 +1,176 @@
+---
+title: "Project VI"
+author: "Juan P. Garces"
+date: "November 15, 2016"
+output: html_document
+---
+
+## Introduction
+
+```{r results="hide", message=FALSE, warning=FALSE}
+library("ggplot2")
+Data <- read.csv("IowaHousing.csv")
+```
+
+the Data that I'm using for this experiment is called IowaHousing.csv. Explained by Dead de Cock from Truman State University, this data was originally obtained from the Ames Assesor's office which is used for tax assessment purposes but also lends itself directly to the prediction of home selling prices. In this experiment I will be using the data to find an appropiate linear model to explain as much as possible the variability in price for Iowa Housing.
+
+#### Preliminaries
+After looking at the different observations to determine house value. I preferred to start with the Lot.Area (Continuous) Data. Which contains the value of Lot Size per square feet.
+
+```{r First Test}
+TestModel <- lm(SalePrice ~ Gr.Liv.Area, data= Data)
+summary(TestModel)
+```
+
+As a start we could determine that it was statistatically significant, we can see that the model gives us a $R^2$ of: `r summary(TestModel)$r.squared` which isn't a bad start. I proceed to pick another observation. 
+
+#### Land Countour
+Is the Flatness of the property a major factor to determine the change of prices in the property? This observation is divided in 4 variables: Lvl: Near Flat/Level, Bnk: Banked, HLS: Hillside, and Low: Depression. I continue add it to the model to test this its significance 
+
+```{r Second Test}
+TestModel <- lm(SalePrice ~ Gr.Liv.Area + Land.Contour, data= Data)
+summary(TestModel)
+```
+
+The Model significance increases, although it isn't by a lot the $R^2$ rises to `r summary(TestModel)$r.squared`, So I decide to keep this observation, because it might be even more significant later on. I decide to continue adding another observation to try and form a better model that describes the house pricing.
+
+#### Bedrooms
+
+Beedroms Observation (Bedroom.AbvGr) shows the amount of Bedrooms above grade (Not including basement bedrooms). I decided to pick this observation because makes sense theoretically that the more Bedrooms the higher the price is.
+
+```{r Third Test}
+TestModel <- lm(SalePrice ~ Gr.Liv.Area +  as.factor(Bedroom.AbvGr), data= Data)
+summary(TestModel)
+```
+
+After creating the Model, although the value for $R^2$ increased, some of the factors in the observation do not represent significance to the model so I decide to remove this observation and continue testing other ones.
+
+#### Year Built
+
+Furthermore, I decided to test relation betwen the Flatness of the property and the sustained model. 
+```{r 4.5 Test}
+TestModel <- lm(SalePrice ~ Gr.Liv.Area +  Land.Contour+ as.factor(Year.Built), data= Data)
+summary(TestModel)
+```
+
+We can see how the significance of the test compared to the model before rises humoungously, but not all the years have that much of a significance to the price of the house. So I decide to make 4 Intervals (Tiers) of 35 Years each to divide the data and acquire a better model. 
+
+```{r Fourth Test}
+year<- function(x){ if(x>1975) 'Tier1' else if(x>1940) 'Tier2' else if(x>1905) 'Tier3' else 'Tier4'}
+Data$Year <- sapply(Data$Year.Built, year)
+
+TestModel <- lm(SalePrice ~ Gr.Liv.Area +  Land.Contour+ Year, data= Data)
+summary(TestModel)
+```
+
+Although the $R^2$ value decreases a bit, the significance is much higher, so I decide to test and continue with the model acquired.
+
+#### Overall Material Quality
+
+Overall Quality observation, rates the overall material and finish of the house. Before I continue to test this observation, I can see from the data that there is too much of a different levels for Material Quality (very excellent, Excellent, Very good, Good, Above Average, Average, Below Average, Fair, Poor, Very Poor), I decide to make a simple categorization an create 3 levels: High which is higher than 7 points, Mid which is higher than 4 points but less than 7, and Low which is lower than 4 points.
+
+```{r }
+quality <- function(x) {if(x> 7) 'High' else if (x>4)  'Mid' else 'Low'}
+Data$MQuality <- sapply(Data$Overall.Qual, quality)
+Data$MQuality <- factor(Data$MQuality, levels= c("High", "Mid", "Low"))
+
+
+TestModel <- lm(SalePrice ~  Gr.Liv.Area + Year + MQuality +  Land.Contour, data= Data)
+summary(TestModel)
+
+```
+
+After looking at the relevance of the different Years to the price and the $R^2$ of `r summary(TestModel)$r.squared` compared to 0.65 from the previous testing, I decide to stay with this observation and continue to find another one to get a better prediction.
+
+#### External Quality
+
+After looking at the different options available I decided to choose something more specific than just the Overall Quality Material of the house. People love have good materials in the outside to protect their homes and make it nicer which should raise the price?
+
+```{r Fifth Test}
+TestModel <- lm(SalePrice ~  Gr.Liv.Area + MQuality + Year + Exter.Qual +  Land.Contour, data= Data)
+Data$Exter.Qual <- factor(Data$Exter.Qual, levels= c("Ex", "Gd", "TA", "Fa", "PO"))
+summary(TestModel)
+```
+
+Indeed the model continues to be more statistically significant. So I decide to stay with this 5 predictors as my Final Model.
+
+## Final Model
+
+For my Final Model I decided to keep 5 of the Predictors to maximize accuracy. The Predictors are: Living Area, Material Quality, Year Built, External Quality, and Land Contour. 
+
+```{r Final-Final Test}
+TestModel <- lm(SalePrice ~  Gr.Liv.Area + MQuality + Year + Exter.Qual +  Land.Contour, data= Data)
+summary(TestModel)
+```
+
+We can see that the Model got a $R^2$ value of `r summary(TestModel)$r.squared`, which tells how close the data is to a fitted regression line. In other words, any prediction made with the coefficients present in the model would have a 79% probability that is a price that coincides with the data for the house predicted. the Test statistic value is: `r summary(TestModel)$fstatistic[1]`  and the p-value is: < 2.2e-16
+
+Final Equation: `r TestModel$coefficients[1] `+ `r TestModel$coefficients[2]`$A$ + `r TestModel$coefficients[3]`$B$ + `r TestModel$coefficients[4]`$C$ + `r TestModel$coefficients[5]`$D$ +`r TestModel$coefficients[6]`$E$ +`r TestModel$coefficients[7]`$F$ + `r TestModel$coefficients[8]`$G$ + `r TestModel$coefficients[9]`$H$ + `r TestModel$coefficients[10]`$I$ + `r TestModel$coefficients[11]`$J$ + `r TestModel$coefficients[12]`$K$ + `r TestModel$coefficients[13]`$L$
+
+### Predictors
+
+#### 1. Living Area
+
+The predictor has a coefficient value of `r TestModel$coefficients[2]` meaning that for each feet squared in the living area the number is then multiplied by that coefficient. 
+
+The graph shows the relation between the Living Area and the Sale Price.
+
+```{r}
+ggplot(Data, aes(Gr.Liv.Area, SalePrice))+ geom_point()
+```
+
+#### 2. Land Contour
+
+The predictor has a coefficient values of Land.ContourHLS: `r TestModel$coefficients[11]` , Land.ContourLOW: `r TestModel$coefficients[12]`, Land.ContourLvl: `r TestModel$coefficients[13]`, depending on the type of land the value of 0 or 1 would be multiplied by the determined coefficient, for instance, if the type of land is Low the coefficient for ContourLow will be multiplied by 1 and the rest by 0.
+
+The graph shows the relation between the Land Contour and the Sale Price.
+
+```{r}
+ggplot(Data, aes(Land.Contour, SalePrice))+ geom_boxplot(aes(color=Land.Contour))
+```
+
+#### 3. Year Built
+
+The predictor has a coefficient values of YearTier2: `r TestModel$coefficients[5]` , YearTier3: `r TestModel$coefficients[6]`, Year.Tier4: `r TestModel$coefficients[7]`, depending on the Year Built the value of 0 or 1 would be multiplied by the determined coefficient, for instance, if the Year Built is in Tier 2 (Older than 1940 but Less than 1975) the coefficient for YearTier2 will be multiplied by 1 and the rest by 0.
+
+The graph shows the relation between the Year Built and the Sale Price.
+
+```{r}
+ggplot(Data, aes(Year, SalePrice))+ geom_boxplot(aes(color=Year))
+```
+
+#### 4. Overall Material Quality
+
+The predictor has a coefficient values of MQualityMid: `r TestModel$coefficients[3]` , MQualityLow: `r TestModel$coefficients[4]` depending on the Overall Quality Material the value of 0 or 1 would be multiplied by the determined coefficient, for instance, if the Material Quality is Low then coefficient for MQuality will be multiplied by 1 and the rest by 0.
+
+The graph shows the relation between the Overall Material Quality and the Sale Price.
+
+```{r}
+ggplot(Data, aes(MQuality, SalePrice))+ geom_boxplot(aes(color=MQuality))
+```
+
+#### 5. External Material Quality
+
+The predictor has a coefficient values of Exter.QualFa: `r TestModel$coefficients[8]` , Exter.QualGd: `r TestModel$coefficients[9]`, Exter.QualTA: `r TestModel$coefficients[10]`, depending on the External Material Quality the value of 0 or 1 would be multiplied by the determined coefficient, for example, if the Material Quality falls in the category of Fair the coefficient for Exter.QualFa will be multiplied by 1 and the rest by 0.
+
+The graph shows the relation between the External Quality and the Sale Price.
+
+```{r}
+ggplot(Data, aes(Exter.Qual, SalePrice))+ geom_boxplot(aes(color=as.factor(Exter.Qual)))
+```
+
+### Noticeable Relations within Variables
+
+Variables such as the Living Area influence the External Quality of the House are relatable. WHich is really interesting, the more the living area the higher external quality materials.
+
+```{r Final}
+ggplot(Data, aes(Exter.Qual, Gr.Liv.Area))+ geom_boxplot(aes(color=Exter.Qual))
+
+```
+
+And same for the Overall Material Quality.
+
+```{r Final2}
+ggplot(Data, aes(MQuality, Gr.Liv.Area))+ geom_boxplot(aes(color=MQuality))
+
+```
