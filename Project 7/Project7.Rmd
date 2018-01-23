@@ -1,0 +1,123 @@
+---
+title: "Project IV"
+author: "Juan P. Garces"
+date: "November 29, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo=FALSE, results='hide', warning=FALSE}
+library("kernlab")
+library("caret")
+library("randomForest")
+Data <- read.csv("weightlift.csv")
+```
+
+## Introduction
+
+The data I'm using for this experiment is the dataset "weightlift.csv"  consists of a data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. Six young health participants were asked to perform one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five different fashions: exactly according to the specification (Class A), throwing the elbows to the front (Class B), lifting the dumbbell only halfway (Class C), lowering the dumbbell only halfway (Class D) and throwing the hips to the front (Class E).
+
+Read more: http://groupware.les.inf.puc-rio.br/har#dataset#ixzz4RWHn1Jfu
+
+## Weighlifting Prediction Model: Variable Selection
+
+To start. I read more about the different variables to gain more reasoning of what could make the biggest effect to build a prediction model. Firstly, I got rid of some of the variables that were used for "time stamp", continuilly some other variables that to my knowledge I thought it might not affect the prediction Model such as some of the acelerometers used on the arm and the x axis for the belt.
+
+### Narrow Down Variables Before Training
+```{r variables}
+colnames(Data)
+Data <- Data[,-c(1:3,8,11,14,21:29,55,52,49)]
+colnames(Data)
+```
+
+## Training Initiation
+
+### Set Up Training Options  
+
+I Set up to perform 3-fold cross-validation.  
+
+```{r training options}
+trainOptions <- trainControl()
+trainOptions$method="cv"
+trainOptions$number=3
+```
+
+### Clean Data Set and Creation of Partitions for Training
+
+I continue to create the following partitions for Training, only using 30% of the data for Training.
+
+```{r partition of first training}
+set.seed(444)
+inTraining <- createDataPartition(y=Data$classe, p=0.3, list=FALSE)
+trainingData <- Data[inTraining,]
+validationData <- Data[-inTraining,]
+```
+
+### Training Model
+
+I used the RandomForest Library to help create a more accurate model with the variables I decided to keep.
+  
+```{r warning=FALSE, message=FALSE, cache=TRUE}
+rfModel <- train(classe~ ., data = Data, method="rf", trControl=trainOptions)
+```
+
+After creating the first model with the Training Data, I decide to see what where the variables that had more influence in the Predictor Model, that way I can have a more accurate prediction and continiously get rid of the ones that to do not affect the model as much. Which I decided to stick with the top 8 most important variables (x > 20.00 Important Points).
+
+### Getting Top Predictors
+```{r top predictors, warning=FALSE, message=FALSE, cache=TRUE}
+Vpriority <- varImp(rfModel)
+print(Vpriority)
+
+sort <- order(Vpriority$importance$Overall,decreasing=TRUE)
+keep <- row.names(Vpriority$importance)[sort[1:8]]
+
+validationData <- validationData[,c(keep,"classe")]
+```
+
+Variabls kept were `r print(keep) `
+
+## Training Continuation
+
+### Partition Validation Data Set
+
+I redo a Partition of the Training set this time containing 60% of the data.
+
+```{r}
+inTraining <- createDataPartition(y=validationData$classe, p=0.6, list=FALSE)
+trainingAgain <- validationData[inTraining,]
+testing <- validationData[-inTraining,]
+```
+
+### Retrain with Only Those Predictors chosen
+
+Then continue to re-train using RandomForest Model.
+
+```{r cache=TRUE}
+rfModel2 <- train(classe ~ ., data = trainingAgain, method="rf", trControl=trainOptions)
+```
+
+## Evaluating Model
+
+Furthermore, I continue to analize the accuracy of the Model.
+
+### In-Sample Model
+
+```{r}
+rfModel2
+trainPredict <- predict(rfModel2,trainingData)
+confusionMatrix(trainPredict,trainingData$classe)$table
+confusionMatrix(trainPredict,trainingData$classe)$overall[1]
+```
+
+Showing an average Accuracy of `r confusionMatrix(trainPredict,trainingData$classe)$overall[1]*100`%, which its very good for the In-Sample Model.
+
+### Out-of-Sample Model
+
+```{r}
+testPredict <- predict(rfModel2,testing)
+confusionMatrix(testPredict,testing$classe)$table
+confusionMatrix(testPredict,testing$classe)$overall[1]
+```
+
+After Testing, the Out-of-Sample Model, an accuracy of `r confusionMatrix(testPredict,testing$classe)$overall[1]*100`% is really good to identify the type of classe depending of how the different excersises are made. Only to be sure that is correct, another ConfusionMatrix was made to be certain of the overall accuracy.
+
+Finally, I decide to keep my Prediction Model, which keeps being consistent with a `r confusionMatrix(testPredict,testing$classe)$overall[1]*100`% accuracy.
